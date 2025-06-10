@@ -34,10 +34,18 @@ class OpenAILLM(LLMInterface):
         self.api_key = model_cfg.api_key
 
         # Set up API client
-        self.client = openai.OpenAI(
+        self.client = openai.AzureOpenAI(
             api_key=self.api_key,
-            base_url=self.api_base,
+            # base_url=self.api_base,
+            # api_version="2024-02-15-preview",
+            api_version="2024-12-01-preview",
+            azure_endpoint="https://oai-hackathon-ofa-sweden.openai.azure.com/"
         )
+        # self.client = openai.OpenAI(
+        #     api_key=self.api_key,
+        #     base_url=self.api_base,
+        #     default_headers={"api-key": self.api_key}
+        # )
 
         logger.info(f"Initialized OpenAI LLM with model: {self.model}")
 
@@ -58,7 +66,8 @@ class OpenAILLM(LLMInterface):
         formatted_messages.extend(messages)
 
         # Set up generation parameters
-        if self.api_base == "https://api.openai.com/v1" and str(self.model).lower().startswith("o"):
+        # if self.api_base == "https://api.openai.com/v1" and str(self.model).lower().startswith("o"):
+        if str(self.model).lower().startswith("o"):
             # For o-series models
             params = {
                 "model": self.model,

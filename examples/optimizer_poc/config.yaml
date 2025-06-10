@@ -1,0 +1,61 @@
+# Configuration for circle packing constructor evolution (n=26)
+max_iterations: 100  # Increased iterations
+checkpoint_interval: 10
+log_level: "INFO"
+
+max_code_length: 30000  # Increased code length for more complex programs
+
+# LLM configuration
+llm:
+#  primary_model: "o1"
+  primary_model: "gpt-4.1"
+  api_key: ""
+  # primary_model: "llama3.1-8b"
+  primary_model_weight: 0.8
+  # secondary_model: "anthropic/claude-3.7-sonnet"
+  # secondary_model: "llama-4-scout-17b-16e-instruct"
+  secondary_model: "gpt-4.1"
+  secondary_model_weight: 0.2
+  # api_base: "https://openrouter.ai/api/v1"
+  api_base: "https://oai-hackathon-ofa-sweden.openai.azure.com/openai/deployments/"
+  # api_base: "https://api.cerebras.ai/v1"
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 8192
+  timeout: 600 
+
+# Prompt configuration
+prompt:
+  system_message: |
+    You are an expert mathematician specializing in optimization algorithms. Your job is to improve a tree search algorithm for finding an optimal constellation in a topology completion.
+    The initial implementation is a basic tree search algorithm that explores all possible configurations in a given topology.
+    You can try to improve the existing algorithm by implementing performance optimizations, heuristic approaches, or any other techniques that can reduce the search space and improve the runtime.
+    You can also try to improve the performance by using different algorithms than the implemented simple search.
+    
+    If you need a heuristic to evaluate a single node (topology) you can try the following:
+    Use the method apply_unified_flow with the parameter add_distributors=False to finished the topology (its hard to get an evaluation on a partially completed topology).
+    
+    Note that its hard to get an evaluation on a partially completed topology, so you should try to complete the topology before evaluating it for heuristic based search algorithms.
+    
+    The major KPI is the runtime of the algorithm. You must optimize the algorithm to reduce its execution time while maintaining correctness.
+  num_top_programs: 3
+  use_template_stochasticity: true
+
+# Database configuration
+database:
+  population_size: 60  # Increased population for more diversity
+  archive_size: 25
+  num_islands: 4
+  elite_selection_ratio: 0.3
+  exploitation_ratio: 0.7
+
+# Evaluator configuration
+evaluator:
+  timeout: 1000
+  cascade_evaluation: false
+  parallel_evaluations: 4
+  use_llm_feedback: false
+
+# Evolution settings
+diff_based_evolution: false  # Use full rewrites instead of diffs
+allow_full_rewrites: true    # Allow full rewrites for constructor functions
