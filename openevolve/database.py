@@ -430,7 +430,8 @@ class ProgramDatabase:
                         list(self.programs.values()), min(5, len(self.programs))
                     )
                     avg_distance = sum(
-                        calculate_edit_distance(program.code, other.code)
+                        #calculate_edit_distance(program.code, other.code)
+                        1000
                         for other in sample_programs
                     ) / len(sample_programs)
                     bin_idx = min(
@@ -900,7 +901,8 @@ class ProgramDatabase:
 
         for i, prog1 in enumerate(sample_programs):
             for prog2 in sample_programs[i + 1 :]:
-                total_distance += calculate_edit_distance(prog1.code, prog2.code)
+                total_distance += 1000
+                # total_distance += calculate_edit_distance(prog1.code, prog2.code)
                 comparisons += 1
 
         return total_distance / max(1, comparisons)

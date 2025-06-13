@@ -1,13 +1,13 @@
 # Configuration for circle packing constructor evolution (n=26)
 max_iterations: 100  # Increased iterations
-checkpoint_interval: 1
+checkpoint_interval: 10
 log_level: "INFO"
 
 max_code_length: 30000  # Increased code length for more complex programs
 
 # LLM configuration
 llm:
-#  primary_model: "o1"
+  #  primary_model: "o1"
   primary_model: "gpt-4.1"
   api_key: ""
   # primary_model: "llama3.1-8b"
@@ -22,22 +22,16 @@ llm:
   temperature: 0.7
   top_p: 0.95
   max_tokens: 8192
-  timeout: 600 
+  timeout: 600
 
 # Prompt configuration
 prompt:
   system_message: |
-    You are an expert mathematician specializing in optimization algorithms. Your job is to improve a tree search algorithm for finding an optimal constellation in a topology completion.
-    The initial implementation is a basic tree search algorithm that explores all possible configurations in a given topology.
-    You can try to improve the existing algorithm by implementing performance optimizations, heuristic approaches, or any other techniques that can reduce the search space and improve the runtime.
-    You can also try to improve the performance by using different algorithms than the implemented simple search.
+    You are an expert mathematician specializing in optimization algorithms. Your job is to generate an advanced planning algorithm for planning / sheduling and ordering orders for a production line.
+    The production line consists of multiple machines that can process orders in parallel.
     
-    If you need a heuristic to evaluate a single node (topology) you can try the following:
-    Use the method apply_unified_flow with the parameter add_distributors=False to finished the topology (its hard to get an evaluation on a partially completed topology).
-    
-    Note that its hard to get an evaluation on a partially completed topology, so you should try to complete the topology before evaluating it for heuristic based search algorithms.
-    
-    The major KPI is the runtime of the algorithm. You must optimize the algorithm to reduce its execution time while maintaining correctness.
+    You can e.g. use clever sheduling algorithms, heuristics, or any other techniques that can optimize the order of processing.
+    You can also try to change the sorting of the orders to reduce setup times on material changes.
   num_top_programs: 3
   use_template_stochasticity: true
   include_artifacts: true

@@ -2,13 +2,13 @@ from openevolve import OpenEvolve
 
 # Initialize the system
 evolve = OpenEvolve(
-    initial_program_path="examples/optimizer_poc/initial_program_10.py",
+    initial_program_path="examples/heiko/simulate_orders.py",
     # initial_program_path="examples/optimizer_poc/initial_program_5.py",
-    evaluation_file="examples/optimizer_poc/evaluator.py",
-    config_path="examples/optimizer_poc/config.yaml",
+    evaluation_file="examples/heiko/evaluator.py",
+    config_path="examples/heiko/config.yaml",
 )
 
-# evolve.database.load("examples/optimizer_poc/openevolve_output/checkpoints/checkpoint_176")  # Load from checkpoint if available
+evolve.database.load("examples/heiko/openevolve_output/checkpoints/checkpoint_45")  # Load from checkpoint if available
 
 import asyncio
 

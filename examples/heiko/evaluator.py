@@ -23,40 +23,6 @@ def timeout_handler(signum, frame):
     raise TimeoutError("Function execution timed out")
 
 
-def validate_best_node(best_node_costs, n):
-    """
-    Validate that the list is sorted in ascending order
-
-    Args:
-        sorted_list: List of numbers to validate, either python float or numpy array
-
-    Returns:
-        True if valid, False otherwise
-    """
-    if best_node_costs is None:
-        raise ValueError("Best node costs cannot be None, this means no solution was found")
-    # This is for n = 5
-    if n == 5:
-        # 3200
-        # 640
-        return best_node_costs == [600, 300, 4000.0, 150.0, 10500]
-    # This is for n = 10
-    if n == 10:
-        # 7280
-        # 728
-        return best_node_costs == [1050, 800, 9000.0, 300.0, 21000]
-    if n == 12:
-        # 8090
-        # 675
-        return best_node_costs == [1260, 900, 10000.0, 200.0, 25200]
-    if n == 15:
-        # 10520
-        # 701
-        # 8900
-        return best_node_costs == [1590, 1200, 13000.0, 200.0, 31800]
-    return False
-
-
 def run_with_timeout(program_path, n, timeout_seconds=120):
     """
     Run the program in a separate process with timeout
@@ -94,14 +60,10 @@ try:
 
     # Run the packing function
     print("Calling run_sorting()...")
-    beste_node_costs = program.run_sorting({n})
+    results = program.simulate_process({n})
     # print(f"run_packing() returned successfully: sum_radii = {{sum_radii}}")
 
     # Save results to a file
-    results = {{
-        'beste_node_costs': beste_node_costs
-    }}
-
     with open('{temp_file.name}.results', 'wb') as f:
         pickle.dump(results, f)
     print(f"Results saved to {temp_file.name}.results")
@@ -147,7 +109,7 @@ except Exception as e:
                 if "error" in results:
                     raise RuntimeError(f"Program execution failed: {results['error']}")
 
-                return results["beste_node_costs"]
+                return results
             else:
                 raise RuntimeError("Results file not found")
 
@@ -183,54 +145,30 @@ def evaluate(program_path):
         # since the result is deterministic
         start_time = time.time()
 
-        for n in [33]:
-
-            # Use subprocess to run with timeout
-            sorted_list = run_with_timeout(
-                program_path, n, timeout_seconds=600  # Single timeout
-            )
-
-            # Validate solution
-            valid = validate_best_node(sorted_list, n)
-
-            # TODO
-            # Approximate the result as good as possible with weights [0.0, 0.1, 0.8, 0.0, 0.0]
-
-            # multiply the result by weights (for 15)
-            max_value = 10520
-
-            weights = [0.0, 0.1, 0.8, 0.0, 0.0]
-
-            weighted_result = sum(
-                weight * value for weight, value in zip(weights, sorted_list)
-            )
-
-            if not valid:
-                break
+        # Use subprocess to run with timeout
+        results = run_with_timeout(
+            program_path, 5000, timeout_seconds=600  # Single timeout
+        )
 
         end_time = time.time()
         eval_time = end_time - start_time
 
         print(
-            f"Evaluation: valid={valid}, time={eval_time:.2f}s"
+            f"Evaluation: time={eval_time:.2f}s"
         )
 
         # if not valid:
         #     raise ValueError(f"Invalid solution")
 
         return {
-            # "eval_time": 1.0 / float(eval_time),
-            # "weighted_result": weighted_result/max_value,
-            "approximate_optimal": (n * 650)/weighted_result,
-            "inverse_eval_time": 1.0 / float(eval_time),
+            **results,
+            "duration": eval_time,
         }
 
     except Exception as e:
         print(f"Evaluation failed completely: {str(e)}")
         traceback.print_exc()
         return {
-            # "eval_time": 0.0,
-            # "weighted_result": 0.0,
-            "approximate_optimal": 0.0,
-            "inverse_eval_time": 0.0,
+            "error": str(e),
+            "duration": 0,
         }
