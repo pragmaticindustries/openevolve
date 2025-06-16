@@ -155,7 +155,7 @@ if __name__ == "__main__":
         "--path",
         type=str,
         default="examples/",
-        help="Path to openevolve_output or checkpoints folder",
+        help="Path to openevolve_output2 or checkpoints folder",
     )
     parser.add_argument("--host", type=str, default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8080)

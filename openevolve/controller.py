@@ -64,7 +64,7 @@ class OpenEvolve:
 
         # Set up output directory
         self.output_dir = output_dir or os.path.join(
-            os.path.dirname(initial_program_path), "openevolve_output"
+            os.path.dirname(initial_program_path), "openevolve_output2"
         )
         os.makedirs(self.output_dir, exist_ok=True)
 

@@ -1,0 +1,167 @@
+def create_text_suggestions(page_id):
+    """
+    Creates text suggestions from the pdf file
+    """
+    try:
+        page_object: Page = Page.objects.get(pk=page_id)
+        if not page_object.text_detected:
+            logger.info(f"Creating text suggestions for page {page_object.page_number}")
+            # Copy the file to a (local) tempfile.
+            # Necessary to support storage backends like S3
+
+            with tempfile.NamedTemporaryFile(
+                suffix=".pdf",
+            ) as tmp:
+                f = page_object.import_file.file.open(
+                    "rb",
+                )
+                tmp.write(f.read())
+                f.close()
+                pdf_document = fitz.Document(tmp.name)
+                page = pdf_document.load_page(page_object.page_number - 1)
+                width = page.rect.width
+                height = page.rect.height
+                logger.debug(f"Page has {page.rotation} degrees rotation")
+                words_dict = page.get_text("dict")
+                blocks = words_dict["blocks"]
+                for block in blocks:
+                    if "lines" in block.keys():
+                        spans = block["lines"]
+                        for span in spans:
+                            data = span["spans"]
+                            for lines in data:
+                                rect = fitz.Rect(lines["bbox"]) * page.rotation_matrix
+                                coordinates = [rect.x0, rect.y0, rect.x1, rect.y1]
+                                x, y, w, h = convert_to_yolo(coordinates, width, height)
+                                TextSuggestion.objects.get_or_create(
+                                    page=page_object,
+                                    text=trim_text(lines["text"].strip()),
+                                    likelihood=1,
+                                    font=lines["font"],
+                                    font_size=lines["size"],
+                                    color="#{:06X}".format(lines["color"]),  # Hex
+                                    x=x,
+                                    y=y,
+                                    w=w,
+                                    h=h,
+                                )
+            page_object.text_detected = True
+            page_object.save(
+                update_fields=[
+                    "text_detected",
+                ]
+            )
+        else:
+            logger.debug(f"Texts already detected for page {page_object.page_number}")
+
+    except Exception:
+        logger.error("Error creating text suggestions", exc_info=True)
+
+def merge_text_suggestions(page_id):
+    """
+    Merge the colliding text suggestions on a page
+    """
+    try:
+        page: Page = Page.objects.get(pk=page_id)
+        logger.info(f"Merging text suggestions for page {page.page_number}")
+
+        keep_merging = True
+        merge_counter = 0
+        while keep_merging:
+            merge_counter += 1
+            if merge_counter > 1000:
+                logger.warning(f"Error during merging texts for {page}")
+                break
+            text_suggestions = TextSuggestion.objects.filter(page=page)
+            start_over = False
+            for text_1 in text_suggestions:
+                for text_2 in text_suggestions:
+                    if text_1 == text_2:
+                        continue
+                    if text_1.can_merge(text_2):
+                        text_1.merge_text(text_2)
+                        start_over = True
+                        break
+                if start_over:
+                    break
+            if start_over:
+                keep_merging = True
+            else:
+                keep_merging = False
+    except Exception:
+        logger.error("Error merging text suggestions", exc_info=True)
+
+
+    def can_merge(self, text_2):
+
+        from .tasks_utils import (
+            is_almost_equal,
+        )
+
+        """Two texts can be merged only if they are touching and one of their sides is almost identical"""
+        return (
+            self.is_touching(text_2)
+            and (
+                is_almost_equal(self.left, text_2.left)
+                or is_almost_equal(self.right, text_2.right)
+                or is_almost_equal(self.top, text_2.top)
+                or is_almost_equal(self.bottom, text_2.bottom)
+            )
+            and self is not text_2
+        )
+
+    def merge_text(self, text_2: "TextSuggestion"):
+        from .tasks_utils import (
+            calculate_top_from_box,
+            calculate_bottom_from_box,
+            calculate_left_from_box,
+            calculate_right_from_box,
+        )
+
+        # The text with bigger font size should come first, if equal the one on top or on left
+        primary = None
+        secondary = None
+        if self.font_size != text_2.font_size:
+            if self.font_size > text_2.font_size:
+                primary = self
+                secondary = text_2
+            else:
+                primary = text_2
+                secondary = self
+        else:
+            if self.top - text_2.top > 0.01:
+                primary = self
+                secondary = text_2
+            elif text_2.top - self.top > 0.01:
+                primary = text_2
+                secondary = self
+            if not primary and not secondary:
+                if self.left + self.top < text_2.left + text_2.top:
+                    primary = self
+                    secondary = text_2
+                else:
+                    primary = text_2
+                    secondary = self
+        # Calculate the boundaries of the new merged box
+        min_left = min(primary.left, secondary.left)
+        max_right = max(primary.right, secondary.right)
+        min_top = min(primary.top, secondary.top)
+        max_bot = max(primary.bottom, secondary.bottom)
+        x_center = (max_right + min_left) / 2
+        y_center = (max_bot + min_top) / 2
+        combined_w = max_right - min_left
+        combined_h = max_bot - min_top
+
+        primary.text += " " + secondary.text
+        primary.font_size = max(primary.font_size, secondary.font_size)
+        primary.x = x_center
+        primary.y = y_center
+        primary.w = combined_w
+        primary.h = combined_h
+        primary.top = calculate_top_from_box(primary.y, primary.h)
+        primary.bottom = calculate_bottom_from_box(primary.y, primary.h)
+        primary.left = calculate_left_from_box(primary.x, primary.w)
+        primary.right = calculate_right_from_box(primary.x, primary.w)
+        primary.save()
+        secondary.delete()
+

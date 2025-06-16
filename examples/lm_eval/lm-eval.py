@@ -45,7 +45,7 @@ class OpenEvolve(LM):
         # folder must match prompt:template_dir in config.yml!
         self.prompt_path = "examples/lm_eval/prompts/system_message.txt"
         self.evaluator_prompt_path = "examples/lm_eval/prompts/evaluator_system_message.txt"
-        self.best_path = "examples/lm_eval/openevolve_output/best/best_program.txt"
+        self.best_path = "examples/lm_eval/openevolve_output2/best/best_program.txt"
         self.base_system_message = "You are an expert task solver, with a lot of commonsense, math, language and coding knowledge.\n\nConsider this task:\n```{prompt}´´´"
 
     def generate(self, prompts: List[str], max_gen_toks: int = None, stop=None, **kwargs):

@@ -298,8 +298,8 @@ if __name__ == "__main__":
     problem_dirs = []
 
     # Check if the path is a single problem directory
-    # A problem directory is expected to contain data files directly and an openevolve_output subdir
-    program_file_check = path_obj / "openevolve_output" / "best" / "best_program.py"
+    # A problem directory is expected to contain data files directly and an openevolve_output2 subdir
+    program_file_check = path_obj / "openevolve_output2" / "best" / "best_program.py"
     data_file_check = path_obj / "X_train_for_eval.npy"
 
     if data_file_check.exists() and program_file_check.exists():
@@ -318,7 +318,7 @@ if __name__ == "__main__":
                 if d.is_dir():
                     # Check if this subdirectory looks like a problem directory
                     if (d / "X_train_for_eval.npy").exists() and (
-                        d / "openevolve_output" / "best" / "best_program.py"
+                        d / "openevolve_output2" / "best" / "best_program.py"
                     ).exists():
                         problem_dirs.append(d)
                         print(f"  Found problem subdirectory: {d.name}")
@@ -339,7 +339,7 @@ if __name__ == "__main__":
         problem_name = subdir_path.name
         # if "21" not in problem_name: continue
         print(f"\nProcessing problem: {problem_name}")
-        program_file_path = subdir_path / "openevolve_output" / "best" / "best_program.py"
+        program_file_path = subdir_path / "openevolve_output2" / "best" / "best_program.py"
         data_dir_path = subdir_path
 
         if (

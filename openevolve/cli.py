@@ -47,7 +47,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument(
         "--checkpoint",
-        help="Path to checkpoint directory to resume from (e.g., openevolve_output/checkpoints/checkpoint_50)",
+        help="Path to checkpoint directory to resume from (e.g., openevolve_output2/checkpoints/checkpoint_50)",
         default=None,
     )
 

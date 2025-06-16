@@ -99,7 +99,7 @@ python openevolve-run.py examples/function_minimization/initial_program.py \
 # Resume from checkpoint 50 for another 50 iterations (creates checkpoints at 60, 70, 80, 90, 100)
 python openevolve-run.py examples/function_minimization/initial_program.py \
   examples/function_minimization/evaluator.py \
-  --checkpoint examples/function_minimization/openevolve_output/checkpoints/checkpoint_50 \
+  --checkpoint examples/function_minimization/openevolve_output2/checkpoints/checkpoint_50 \
   --iterations 50
 ```
 
@@ -141,7 +141,7 @@ pip install -r scripts/requirements.txt
 python scripts/visualizer.py
 
 # Start the visualization web server with a specific checkpoint
-python scripts/visualizer.py --path examples/function_minimization/openevolve_output/checkpoints/checkpoint_100/
+python scripts/visualizer.py --path examples/function_minimization/openevolve_output2/checkpoints/checkpoint_100/
 ```
 
 In the visualization UI, you can

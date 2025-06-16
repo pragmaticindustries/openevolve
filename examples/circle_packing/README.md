@@ -217,7 +217,7 @@ python openevolve-run.py examples/circle_packing/initial_program.py \
   --iterations 100
 
 # Phase 2: Breaking through the plateau
-python openevolve-run.py examples/circle_packing/openevolve_output/checkpoints/checkpoint_100/best_program.py \
+python openevolve-run.py examples/circle_packing/openevolve_output2/checkpoints/checkpoint_100/best_program.py \
   examples/circle_packing/evaluator.py \
   --config examples/circle_packing/config_phase_2.yaml \
   --iterations 100

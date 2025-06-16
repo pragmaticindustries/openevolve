@@ -1,0 +1,52 @@
+# Configuration for the text merging evolution task
+max_iterations: 100
+checkpoint_interval: 10
+log_level: "INFO"
+max_code_length: 15000
+
+# LLM configuration
+llm:
+  primary_model: "gpt-4.1"
+  api_key: ""
+  primary_model_weight: 1.0
+  api_base: "https://oai-hackathon-ofa-sweden.openai.azure.com/openai/deployments/"
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 4096
+  timeout: 600
+
+# Prompt configuration
+prompt:
+  system_message: |
+    You are a Python expert specializing in text processing and data structures. Your task is to rewrite the Python code inside the 'EVOLVE-BLOCK' to improve a function that merges adjacent text blocks.
+    
+    The function should merge text blocks based on these rules:
+    If texts are close enough they should be merged
+    The headline of the text should come first even if its not on the top 
+    the big font size usually means that it is the headline or if it starts with a symbol
+    
+    You MUST output a complete and valid Python script. Do NOT output only the modified function. Return the entire file content with your improvements applied to the `transform_text_data` function.
+
+  num_top_programs: 3
+  use_template_stochasticity: true
+  include_artifacts: true
+
+# Database configuration
+database:
+  population_size: 101
+  archive_size: 20
+  num_islands: 2
+  elite_selection_ratio: 0.25
+  exploitation_ratio: 0.75
+
+# Evaluator configuration
+evaluator:
+  timeout: 60
+  cascade_evaluation: false
+  parallel_evaluations: 2
+  use_llm_feedback: false
+  enable_artifacts: true
+
+# Evolution settings
+diff_based_evolution: false
+allow_full_rewrites: true
