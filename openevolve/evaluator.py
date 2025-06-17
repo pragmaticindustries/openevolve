@@ -223,6 +223,8 @@ class Evaluator:
             result = self.evaluate_function(program_path)
 
             # Validate result
+            if isinstance(result, EvaluationResult):
+                return result
             if not isinstance(result, dict):
                 logger.warning(f"Evaluation returned non-dictionary result: {result}")
                 return {"error": 0.0}

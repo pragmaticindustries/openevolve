@@ -430,7 +430,7 @@ class ProgramDatabase:
                         list(self.programs.values()), min(5, len(self.programs))
                     )
                     avg_distance = sum(
-                        #calculate_edit_distance(program.code, other.code)
+                        # calculate_edit_distance(program.code, other.code)
                         1000
                         for other in sample_programs
                     ) / len(sample_programs)
@@ -593,8 +593,12 @@ class ProgramDatabase:
                 return next(iter(self.programs.values()))
 
         # Sample from current island
-        parent_id = random.choice(list(current_island_programs))
-        return self.programs[parent_id]
+        while True:
+            parent_id = random.choice(list(current_island_programs))
+            if parent_id in self.programs:
+                return self.programs[parent_id]
+            else:
+                print("Have to resample parent_id...")
 
     def _sample_exploitation_parent(self) -> Program:
         """

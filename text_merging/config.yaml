@@ -1,5 +1,5 @@
 # Configuration for the text merging evolution task
-max_iterations: 100
+max_iterations: 1000
 checkpoint_interval: 10
 log_level: "INFO"
 max_code_length: 15000
@@ -18,15 +18,12 @@ llm:
 # Prompt configuration
 prompt:
   system_message: |
-    You are a Python expert specializing in text processing and data structures. Your task is to rewrite the Python code inside the 'EVOLVE-BLOCK' to improve a function that merges adjacent text blocks.
+    You are a Python expert specializing in text processing and data structures. Your task is to improve a function that merges adjacent text blocks.
     
-    The function should merge text blocks based on these rules:
-    If texts are close enough they should be merged
-    The headline of the text should come first even if its not on the top 
-    the big font size usually means that it is the headline or if it starts with a symbol
+    The basic functionality is: From an OCR step the program gets a list of single text blocks with a single line fragment of text together with a bounding box, text size and so on.
+    The goal is to merge adjacent text blocks that are close together into a single block. The merging should consider the bounding boxes and text sizes to ensure that the merged block is coherent and maintains the original meaning.
     
-    You MUST output a complete and valid Python script. Do NOT output only the modified function. Return the entire file content with your improvements applied to the `transform_text_data` function.
-
+    But only merge blocks that are close together, e.g. if the bounding boxes are overlapping or very close together. Try not to merge too many blocks, many text fragments dont need to be merged.
   num_top_programs: 3
   use_template_stochasticity: true
   include_artifacts: true
@@ -35,7 +32,7 @@ prompt:
 database:
   population_size: 101
   archive_size: 20
-  num_islands: 2
+  num_islands: 4
   elite_selection_ratio: 0.25
   exploitation_ratio: 0.75
 
@@ -43,7 +40,7 @@ database:
 evaluator:
   timeout: 60
   cascade_evaluation: false
-  parallel_evaluations: 2
+  parallel_evaluations: 4
   use_llm_feedback: false
   enable_artifacts: true
 

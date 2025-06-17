@@ -2,6 +2,8 @@ import json
 import subprocess
 import time
 
+from openevolve.evaluation_result import EvaluationResult
+
 
 def get_ground_truth():
     """
@@ -33,19 +35,19 @@ def evaluate(program_path: str):
         if result.returncode != 0:
             error_message = f"Execution failed with return code {result.returncode}. Stderr: {result.stderr}"
             print(f"ERROR: {error_message}")
-            return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": error_message}
+            return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": error_message, "overall_score": 0.0}
 
         # Print the raw output from the program for debugging
-        print("--- Program Output (stdout) ---")
-        print(result.stdout)
-        print("-----------------------------")
+        # print("--- Program Output (stdout) ---")
+        # print(result.stdout)
+        # print("-----------------------------")
 
         try:
             output_data = json.loads(result.stdout)
         except json.JSONDecodeError as e:
             error_message = f"Output was not valid JSON. Error: {e}"
             print(f"ERROR: {error_message}")
-            return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": error_message}
+            return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": error_message, "overall_score": 0.0}
 
         ground_truth = get_ground_truth()
 
@@ -55,7 +57,7 @@ def evaluate(program_path: str):
         if not ground_truth_blocks:
             correctness = 100.0 if not output_blocks else 0.0
             print("Ground truth is empty. Correctness is 100% if output is also empty.")
-            return {"correctness": correctness, "inverse_eval_time": 1.0 / eval_time if eval_time > 0 else 0.0}
+            return {"correctness": correctness, "inverse_eval_time": 1.0 / eval_time if eval_time > 0 else 0.0, "overall_score": 0.0}
 
         # Create a set of all unique text strings from the program's output for fast checking.
         output_texts = {block.get('text', '').strip() for block in output_blocks}
@@ -64,22 +66,24 @@ def evaluate(program_path: str):
         score = 0
         unmatched_texts = []
 
-        print("\n--- Comparing with Ground Truth ---")
+        truth_blocks = "--- Comparing with Ground Truth ---"
         # Count how many of the ground truth texts are present in the output.
         for truth_block in ground_truth_blocks:
             expected_text = truth_block.get('text', '').strip()
             if expected_text and expected_text in output_texts:
                 score += 1
-                print(f"[  OK   ] Found: \"{expected_text}\"")
+                truth_blocks += f"\n[  OK   ] Found: \"{expected_text}\""
             elif expected_text:
                 unmatched_texts.append(expected_text)
-                print(f"[ MISS  ] Did not find: \"{expected_text}\"")
+                truth_blocks += f"\n[ MISS  ] Did not find: \"{expected_text}\""
 
+        missing_texts = "--- Summary of Missing Texts ---"
         if unmatched_texts:
-            print("\n--- Summary of Missing Texts ---")
+            # print("\n--- Summary of Missing Texts ---")
             for text in unmatched_texts:
-                print(f"- \"{text}\"")
-            print("--------------------------------")
+                # print(f"- \"{text}\"")
+                missing_texts += f"\n- \"{text}\""
+            # print("--------------------------------")
 
 
         # Calculate correctness as the percentage of matched texts.
@@ -91,14 +95,17 @@ def evaluate(program_path: str):
         print(f"Correctness: {correctness:.2f}%")
         print("-------------------")
 
-        return {"correctness": correctness, "inverse_eval_time": 1.0 / eval_time if eval_time > 0 else 0.0}
+        # return {"correctness": correctness, "inverse_eval_time": 1.0 / eval_time if eval_time > 0 else 0.0, "overall_score": correctness}
+        return EvaluationResult(
+            metrics={"correctness": correctness, "inverse_eval_time": 1.0 / eval_time if eval_time > 0 else 0.0, "overall_score": correctness},
+        artifacts={"truth_blocks": truth_blocks, "missing_texts": missing_texts, "stdout": str(result.stdout)},)
 
     except subprocess.TimeoutExpired:
         print("ERROR: Evaluation timed out.")
-        return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": "Evaluation timed out."}
+        return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": "Evaluation timed out.", "overall_score": 0.0}
     except Exception as e:
         print(f"ERROR: An unexpected error occurred: {e}")
-        return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": str(e)}
+        return {"correctness": 0.0, "inverse_eval_time": 0.0, "error": str(e), "overall_score": 0.0}
 
 
 if __name__ == "__main__":

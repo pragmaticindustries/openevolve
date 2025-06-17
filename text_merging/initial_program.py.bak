@@ -93,8 +93,46 @@ def transform_text_data(input_data: Dict[str, Any]) -> Dict[str, Any]:
     # Add boundaries for all blocks up front
     items = [get_block_boundaries(b) for b in blocks]
 
-    # TODO here we would add the logic to merge adjacent blocks
-
+    # Use a greedy approach: always merge the closest pair until no more can be merged
+    changed = True
+    max_iters = 500
+    iters = 0
+    # while changed and iters < max_iters:
+    #     changed = False
+    #     n = len(items)
+    #     used = [False] * n
+    #     merged_indices = set()
+    #     new_items = []
+    #     i = 0
+    #     while i < n:
+    #         if used[i]:
+    #             i += 1
+    #             continue
+    #         best_j = -1
+    #         for j in range(n):
+    #             if i == j or used[j]:
+    #                 continue
+    #             if blocks_are_close(items[i], items[j]):
+    #                 best_j = j
+    #                 break
+    #         if best_j != -1:
+    #             merged_block = merge_blocks(items[i], items[best_j])
+    #             used[i] = True
+    #             used[best_j] = True
+    #             new_items.append(merged_block)
+    #             changed = True
+    #         else:
+    #             new_items.append(items[i])
+    #             used[i] = True
+    #         i += 1
+    #     items = new_items
+    #     iters += 1
+    #
+    # # Remove temporary keys
+    # for b in items:
+    #     for k in ['top', 'bottom', 'left', 'right', 'font_size']:
+    #         if k in b:
+    #             b.pop(k)
     return {"page1": items}
 
 # EVOLVE-BLOCK-END
